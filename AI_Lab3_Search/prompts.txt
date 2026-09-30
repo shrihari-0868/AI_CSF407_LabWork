@@ -1,0 +1,140 @@
+================================================================
+PROMPTS USED WITH THE LLM
+Artificial Intelligence -- Laboratory Exercise: Search and A*
+Assistant used: Claude (Anthropic)
+================================================================
+
+These are the prompts that actually shaped the submitted code, in the
+order they were issued. Tasks 0 and 1 (the problem formulation and the
+agent design) were written BEFORE any of these prompts, on paper, and
+the design was then handed to the LLM as the specification in Prompt 1.
+
+
+----------------------------------------------------------------
+PROMPT 1 -- Generate the initial A* implementation (Task 2)
+----------------------------------------------------------------
+I am implementing a simple goal-based search agent in Python. The
+environment is a grid given as an ASCII map. The agent starts at S and
+must reach G. '#' is an obstacle and '.' is a free cell. The agent can
+move up, down, left or right, and every movement costs 1.
+
+Implement A* search. Use Manhattan distance as the heuristic:
+h(n) = |x - x_G| + |y - y_G|.
+
+Follow this design, which I have already written:
+
+  - a state is the tuple (row, col) of a free cell;
+  - the warehouse is a list of strings, indexed grid[row][col];
+  - an action is valid if the target cell is inside the grid and is
+    not '#';
+  - the goal test compares the state against the coordinates of 'G';
+  - the frontier is a priority queue ordered by f(n) = g(n) + h(n),
+    and each frontier entry must carry enough information to recover
+    g(n) and the parent of the state;
+  - the path is reconstructed by following parent pointers back from
+    the goal and reversing the result.
+
+The program must:
+  - avoid repeatedly expanding the same state;
+  - report whether a solution was found;
+  - report the path, the path length, and the number of states
+    expanded.
+
+Keep the implementation simple, use only the standard library, and
+explain the main components of the code.
+
+
+----------------------------------------------------------------
+PROMPT 2 -- Clarify the goal test (correctness question)
+----------------------------------------------------------------
+In the version you produced, the goal test happens when a successor is
+generated. Explain the difference between testing for the goal when a
+node is generated and testing when it is popped from the frontier.
+Which of the two preserves optimality for A* with an admissible
+heuristic, and why? Do not just assert the answer -- justify it with
+the f-value ordering argument.
+
+
+----------------------------------------------------------------
+PROMPT 3 -- Deterministic tie-breaking
+----------------------------------------------------------------
+Several states in this map share the same f value. With entries of the
+form (f, state) on the heap, ties are broken by comparing the
+coordinate tuples, which is arbitrary and makes the number of expanded
+states depend on details I did not choose. Change the frontier entries
+so that ties are broken by insertion order instead, and explain why
+this makes runs reproducible without affecting optimality.
+
+
+----------------------------------------------------------------
+PROMPT 4 -- Define the expansion counter precisely
+----------------------------------------------------------------
+A state can be pushed onto the heap more than once, so some pops are
+stale duplicates. I want "states expanded" to mean the number of
+distinct states that were actually expanded, not the number of pops.
+Adjust the counter and make the skipping of stale entries explicit in
+the code.
+
+
+----------------------------------------------------------------
+PROMPT 5 -- BFS version for the comparison (Task 5)
+----------------------------------------------------------------
+Produce a breadth-first search version of the same agent, in a
+separate file, reusing the map parsing and successor functions from
+the A* file so that the two searches are solving an identical problem.
+Use a FIFO queue and mark states as visited when they are generated.
+Return the same result dictionary shape as the A* function so the two
+can be compared directly. Also explain why, on this map, BFS is
+guaranteed to return a shortest path.
+
+
+----------------------------------------------------------------
+PROMPT 6 -- Heuristic variants (Task 6)
+----------------------------------------------------------------
+Add three further heuristics alongside Manhattan: h(n) = 0, Euclidean
+distance, and 2 x Manhattan. Make the heuristic a parameter of the
+search function rather than hard-coding it, and print a table of
+(heuristic, solution found, path length, states expanded) for the
+warehouse map.
+
+
+----------------------------------------------------------------
+PROMPT 7 -- Investigating an unexpected result
+----------------------------------------------------------------
+On the warehouse map all four heuristics expand exactly 64 states and
+return a path of length 40. That looks like the heuristic is not being
+used at all. Before you change any code: give me a way to test whether
+this is a wiring bug or a genuine property of this particular map.
+
+
+----------------------------------------------------------------
+PROMPT 8 -- Explaining the Manhattan heuristic (Task 6)
+----------------------------------------------------------------
+Explain why Manhattan distance is an appropriate heuristic for this
+warehouse given that the robot can move only horizontally and
+vertically, and state the condition under which it is admissible. Then
+explain what admissibility guarantees and what is lost when the
+heuristic is multiplied by 2.
+
+
+----------------------------------------------------------------
+PROMPT 9 -- Constructing a discriminating test map
+----------------------------------------------------------------
+The warehouse map does not distinguish the heuristics because it is
+essentially one long corridor. Help me construct two small maps that
+do: one open room with a central barrier, where a better heuristic
+should visibly prune the search, and one map where an inadmissible
+heuristic (2 x Manhattan) returns a path that is strictly longer than
+the optimum. Explain the property each map needs to have.
+
+
+================================================================
+NOTE ON USE
+================================================================
+Every prompt above asked for an explanation as well as code, so that
+the output could be checked rather than trusted. The code was run
+against the four Task 3 tests and cross-checked against BFS before
+any result in the report was recorded. Prompt 7 is the clearest
+example of the LLM being used as an assistant rather than an oracle:
+it was asked for a way to test the surprising result, not for the
+answer.
